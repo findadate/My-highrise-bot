@@ -2,33 +2,45 @@ import streamlit as st
 import asyncio
 import os
 import threading
-from highrise import BaseBot
+import sys
+from highrise import BaseBot, User, Position
 from highrise.__main__ import main
 
+# --- AAPKA BOT ENGINE ---
 class MyBot(BaseBot):
     async def on_start(self, session_metadata):
-        st.write("✅ BOT LOGIN SUCCESSFUL!")
-        print("Bot is in the room!")
+        st.success("🎉 BOT SUCCESSFULLY JOINED THE ROOM!")
+        print("Bot is in!")
+        await self.highrise.send_emote("emote-dance-tiktok")
 
-st.title("🤖 Highrise Bot Debugger")
+    async def on_user_join(self, user: User, position: Position):
+        await self.highrise.chat(f"Welcome {user.username}! ❤️")
 
-# Check Secrets
+# --- STREAMLIT DASHBOARD ---
+st.title("🚀 Highrise Bot: Final Launch")
+
+# 1. Check Secrets
 token = st.secrets.get("API_TOKEN")
 room = st.secrets.get("ROOM_ID")
 
 if not token or not room:
-    st.error("❌ Secrets missing! Please add API_TOKEN and ROOM_ID.")
+    st.error("❌ Secrets missing! Please add API_TOKEN and ROOM_ID in Settings.")
 else:
-    st.success(f"Secrets loaded! Room: {room[:5]}...")
+    st.info(f"Checking Connection for Room: {room}")
 
-def run_bot():
+def start_bot():
     os.environ["API_TOKEN"] = token
     os.environ["ROOM_ID"] = room
+    # 'main:MyBot' ka matlab isi file ka bot use karo
+    definitions = ["main:MyBot"]
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     try:
-        asyncio.run(main(["main:MyBot"]))
+        loop.run_until_complete(main(definitions))
     except Exception as e:
-        st.error(f"⚠️ Connection Error: {e}")
+        st.error(f"⚠️ Highrise Error: {e}")
 
-if st.button("🚀 Force Start Bot"):
-    threading.Thread(target=run_bot, daemon=True).start()
-    st.info("Bot waking up... please wait.")
+# Button to Start
+if st.button("🔥 ACTIVATE BOT NOW"):
+    st.warning("Connecting... Please check your Highrise Room in 30 seconds.")
+    threading.Thread(target=start_bot, daemon=True).start()
