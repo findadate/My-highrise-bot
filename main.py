@@ -2,45 +2,40 @@ import streamlit as st
 import asyncio
 import os
 import threading
-import sys
 from highrise import BaseBot, User, Position
 from highrise.__main__ import main
 
-# --- AAPKA BOT ENGINE ---
-class MyBot(BaseBot):
+# --- AAPKA DATA (Hardcoded for testing) ---
+# Ram, agar ye test successful ho jaye toh hum ise baad mein Secrets mein shift kar denge
+MY_TOKEN = "e0e463181e9c0a828c53c5ac24348b03dbcd1c5a0a8c3f5bc9efc36bddb901dc"
+MY_ROOM_ID = "68e27f6e9796e3239f1cd493"
+
+class Bot(BaseBot):
     async def on_start(self, session_metadata):
-        st.success("🎉 BOT SUCCESSFULLY JOINED THE ROOM!")
-        print("Bot is in!")
+        st.write("✨ BOT IS CONNECTED TO HIGHRISE!")
+        print("Bot is online!")
         await self.highrise.send_emote("emote-dance-tiktok")
 
     async def on_user_join(self, user: User, position: Position):
-        await self.highrise.chat(f"Welcome {user.username}! ❤️")
+        await self.highrise.chat(f"Welcome {user.username}!")
 
-# --- STREAMLIT DASHBOARD ---
-st.title("🚀 Highrise Bot: Final Launch")
+# --- STREAMLIT INTERFACE ---
+st.title("🤖 Highrise Bot Final Launcher")
 
-# 1. Check Secrets
-token = st.secrets.get("API_TOKEN")
-room = st.secrets.get("ROOM_ID")
-
-if not token or not room:
-    st.error("❌ Secrets missing! Please add API_TOKEN and ROOM_ID in Settings.")
-else:
-    st.info(f"Checking Connection for Room: {room}")
-
-def start_bot():
-    os.environ["API_TOKEN"] = token
-    os.environ["ROOM_ID"] = room
-    # 'main:MyBot' ka matlab isi file ka bot use karo
-    definitions = ["main:MyBot"]
+def run_bot():
+    os.environ["API_TOKEN"] = MY_TOKEN
+    os.environ["ROOM_ID"] = MY_ROOM_ID
+    
+    # Ye 'main:Bot' batata hai ki isi file (main.py) ki Bot class use karo
+    definitions = ["main:Bot"]
+    
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
         loop.run_until_complete(main(definitions))
     except Exception as e:
-        st.error(f"⚠️ Highrise Error: {e}")
+        st.error(f"❌ Connection Failed: {e}")
 
-# Button to Start
-if st.button("🔥 ACTIVATE BOT NOW"):
-    st.warning("Connecting... Please check your Highrise Room in 30 seconds.")
-    threading.Thread(target=start_bot, daemon=True).start()
+if st.button("🚀 LAUNCH BOT"):
+    st.info("Starting connection... Check your Highrise room in 20 seconds.")
+    threading.Thread(target=run_bot, daemon=True).start()
