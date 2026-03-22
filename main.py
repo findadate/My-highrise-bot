@@ -1,15 +1,17 @@
 import streamlit as st
 import asyncio
-import os
 import threading
+import os
 from highrise.__main__ import main
 
 st.title("🤖 Highrise Bot Dashboard")
 
-# Bot ko alag thread mein chalane ka function
-def start_bot_thread():
+def start_bot_thread(token, room):
+    # Secrets ko environment variables mein set karna zaroori hai
+    os.environ["API_TOKEN"] = token
+    os.environ["ROOM_ID"] = room
+    
     definitions = ["bot:MyBot"]
-    # Naya event loop banana zaroori hai
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
@@ -17,14 +19,18 @@ def start_bot_thread():
     except Exception as e:
         print(f"Bot Error: {e}")
 
-# Streamlit UI
-if "bot_started" not in st.session_state:
-    st.session_state.bot_started = False
+# Streamlit secrets se data uthana
+if "API_TOKEN" in st.secrets and "ROOM_ID" in st.secrets:
+    token = st.secrets["API_TOKEN"]
+    room = st.secrets["ROOM_ID"]
+    
+    if "bot_started" not in st.session_state:
+        st.info("Connecting to Highrise room...")
+        thread = threading.Thread(target=start_bot_thread, args=(token, room), daemon=True)
+        thread.start()
+        st.session_state.bot_started = True
+        st.success("Bot process initiated! Check your room.")
+else:
+    st.error("Secrets missing! Please add API_TOKEN and ROOM_ID in Advanced Settings.")
 
-if st.button("Start Bot") or not st.session_state.bot_started:
-    thread = threading.Thread(target=start_bot_thread, daemon=True)
-    thread.start()
-    st.session_state.bot_started = True
-    st.success("Bot process initiated in background!")
-
-st.info("Check your Highrise room to see if the bot is online.")
+st.write("Logs checking ke liye niche 'Manage app' par click karein.")
