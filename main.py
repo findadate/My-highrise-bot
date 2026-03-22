@@ -1,36 +1,39 @@
 import streamlit as st
 import asyncio
-import threading
 import os
+import threading
+from highrise import BaseBot
 from highrise.__main__ import main
 
-st.title("🤖 Highrise Bot Dashboard")
-
-def start_bot_thread(token, room):
-    # Secrets ko environment variables mein set karna zaroori hai
-    os.environ["API_TOKEN"] = token
-    os.environ["ROOM_ID"] = room
+# --- YE AAPKA BOT CODE HAI ---
+class MyBot(BaseBot):
+    async def on_start(self, session_metadata):
+        print("Bot is online and ready!")
     
-    definitions = ["bot:MyBot"]
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        loop.run_until_complete(main(definitions))
-    except Exception as e:
-        print(f"Bot Error: {e}")
+    async def on_chat(self, user, message):
+        if message.lower() == "!hello":
+            await self.highrise.chat(f"Hello {user.username}!")
 
-# Streamlit secrets se data uthana
-if "API_TOKEN" in st.secrets and "ROOM_ID" in st.secrets:
-    token = st.secrets["API_TOKEN"]
-    room = st.secrets["ROOM_ID"]
+# --- YE STREAMLIT KA SYSTEM HAI ---
+st.title("🤖 Highrise Bot Control")
+
+def run_bot():
+    token = st.secrets.get("API_TOKEN")
+    room = st.secrets.get("ROOM_ID")
     
-    if "bot_started" not in st.session_state:
-        st.info("Connecting to Highrise room...")
-        thread = threading.Thread(target=start_bot_thread, args=(token, room), daemon=True)
-        thread.start()
-        st.session_state.bot_started = True
-        st.success("Bot process initiated! Check your room.")
-else:
-    st.error("Secrets missing! Please add API_TOKEN and ROOM_ID in Advanced Settings.")
+    if token and room:
+        os.environ["API_TOKEN"] = token
+        os.environ["ROOM_ID"] = room
+        # Humne class ka naam MyBot rakha hai
+        definitions = ["main:MyBot"] 
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(main(definitions))
+        except Exception as e:
+            st.error(f"Error: {e}")
 
-st.write("Logs checking ke liye niche 'Manage app' par click karein.")
+if st.button("🚀 Start My Bot"):
+    st.info("Trying to connect... Please wait 30 seconds.")
+    threading.Thread(target=run_bot, daemon=True).start()
+    st.success("Connection process started! Check your room.")
