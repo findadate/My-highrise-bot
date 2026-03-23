@@ -1,23 +1,19 @@
 import streamlit as st
-import asyncio
 import os
-import threading
-from highrise import BaseBot
 from highrise.__main__ import main
+import asyncio
 
+# Seedha Token aur ID yahan likh dete hain (Sirf test ke liye)
+# Ram, agar ye chal gaya toh hum ise baad mein badal denge
+os.environ["API_TOKEN"] = "e0e463181e9c0a828c53c5ac24348b03dbcd1c5a0a8c3f5bc9efc36bddb901dc"
+os.environ["ROOM_ID"] = "68e27f6e9796e3239f1cd493"
+
+st.write("Bot setup start...")
+
+from highrise import BaseBot
 class Bot(BaseBot):
     async def on_start(self, session_metadata):
-        print("Bot is in the room!")
-        st.success("🎉 Bot Online!")
+        print("ONLINE!")
 
-st.title("🤖 SuperBotRam")
-
-def run_bot():
-    # Streamlit Secrets se data lena
-    os.environ["API_TOKEN"] = st.secrets["API_TOKEN"]
-    os.environ["ROOM_ID"] = st.secrets["ROOM_ID"]
+if st.button("RUN"):
     asyncio.run(main(["main:Bot"]))
-
-if st.button("🚀 ACTIVATE"):
-    threading.Thread(target=run_bot, daemon=True).start()
-    st.info("Bot starting...")
