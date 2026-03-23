@@ -5,23 +5,22 @@ import threading
 from highrise import BaseBot
 from highrise.__main__ import main
 
-# Room aur Token (Aapne jo diye wahi hain)
-ROOM_ID = "68e27f6e9796e3239f1cd493"
+# Aapka Data
 TOKEN = "e0e463181e9c0a828c53c5ac24348b03dbcd1c5a0a8c3f5bc9efc36bddb901dc"
+ROOM = "68e27f6e9796e3239f1cd493"
 
 class Bot(BaseBot):
     async def on_start(self, session_metadata):
-        print("Bot is in!")
-        st.success("✅ BOT CONNECTED!")
+        st.success("✅ BOT ROOM MEIN HAI!")
 
-st.title("Highrise Bot Launcher")
+st.title("🤖 SuperBot Launcher")
 
-def start_bot():
+def run():
     os.environ["API_TOKEN"] = TOKEN
-    os.environ["ROOM_ID"] = ROOM_ID
-    # Isse bot start hoga
+    os.environ["ROOM_ID"] = ROOM
+    # Isse aapka bot connect hoga
     asyncio.run(main(["main:Bot"]))
 
-if st.button("🚀 ACTIVATE BOT"):
-    st.info("Starting...")
-    threading.Thread(target=start_bot, daemon=True).start()
+if st.button("🚀 ACTIVATE"):
+    st.info("Connecting... 1 minute wait karein.")
+    threading.Thread(target=run, daemon=True).start()
