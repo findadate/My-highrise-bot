@@ -1,2 +1,2 @@
-highrise-bot-sdk
+highrise-bot-sdk==23.1.0b12
 streamlit
